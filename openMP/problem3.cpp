@@ -1,6 +1,6 @@
 #include <iostream>
 #include <omp.h>
-#include <random>
+#include <time.h>
 
 int main()
 {
@@ -9,33 +9,42 @@ int main()
     intptr_t** B = new intptr_t*[n];
     intptr_t** C = new intptr_t*[n];
 
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> rand100(-100,100);
-
     for (intptr_t i = 0; i < n; ++i) {
         A[i] = new intptr_t[n];
         B[i] = new intptr_t[n];
         C[i] = new intptr_t[n];
     }
 
+    srand(time(NULL));
+
     for (intptr_t i = 0; i < n; ++i)
         for (intptr_t j = 0; j < n; ++j) {
-            A[i][j] = rand100(rng);
-            B[i][j] = rand100(rng);
+            A[i][j] = rand() % 201 - 100;
+            B[i][j] = rand() % 201 - 100;
             C[i][j] = 0;
         }
 
-    double start = omp_get_wtime();
-#pragma omp parallel for 
-    for (int i = 0; i < n; ++i){
-        for (int j = 0; j < n; ++j){
-            for (int k = 0; k < n; ++k){
-                C[i][j] += A[i][k] * B[k][j];
+    std::cout << "Matrix multiplication report\n";
+    std::cout << "-------------------------\n";
+
+    std::cout << "N\tThreads\tTime (ms)\n";
+
+    for (int i = 1; i < 10; i*=2){
+        double start = omp_get_wtime();
+#pragma omp parallel for num_threads(i)
+        for (int i = 0; i < n; ++i){
+            for (int j = 0; j < n; ++j){
+                for (int k = 0; k < n; ++k){
+                    C[i][j] += A[i][k] * B[k][j];
+                }
             }
         }
-    }
-    double end = omp_get_wtime();
+        double end = omp_get_wtime();
 
-    std::cout << "Time in ms: " << (end - start) * 1000 << '\n';
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                C[i][j] = 0;
+
+        std::cout << n << '\t' << i << '\t' << (end - start) * 1000 << '\n';
+    }
 }

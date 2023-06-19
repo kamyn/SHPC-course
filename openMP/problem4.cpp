@@ -50,14 +50,11 @@ void mergeSortParallel(int* arr, int l, int r)
 {
     int m = l + (r - l) / 2;
     if (l < r)
-    {
-#pragma omp parallel sections
-        { 
-# pragma omp section
+    { 
+#pragma omp task
             mergeSortParallel(arr, l, m);
-# pragma omp section
+#pragma omp task
             mergeSortParallel(arr, m + 1, r);
-        }
         merge(arr, l, m, r);
     }
 }
@@ -73,26 +70,29 @@ void mergeSort(int* arr, int l, int r)
 }
 
 int main() {
-    int n = 1e6;
+    int n = 1e7;
     int* arr = new int[n];
 
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> rand1e4(-100,100);
-
     for (int i = 0; i < n; ++i)
-        arr[i] = rand1e4(rng);
+        arr[i] = rand() % 201 - 100;
 
     double start = omp_get_wtime();
     mergeSort(arr, 0, n - 1); 
     double end = omp_get_wtime();
+    std::cout << "Merge sort report\n";
+    std::cout << "-----------------\n";
+    std::cout << "Array of " << n << " elements\n";
     std::cout << "Time in ms (seq): " << (end - start) * 1000 << '\n';
     
     for (int i = 0; i < n; ++i)
-        arr[i] = rand1e4(rng);
+        arr[i] = rand() % 201 - 100;
 
     start = omp_get_wtime();
+#pragma omp parallel
+    {
+#pragma omp single
     mergeSortParallel(arr, 0, n-1);
+    }
     end = omp_get_wtime();
     std::cout << "Time in ms (parallel): " << (end - start) * 1000 << '\n';
 
