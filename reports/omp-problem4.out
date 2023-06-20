@@ -1,0 +1,5 @@
+Merge sort report
+-----------------
+Array of 10000000 elements
+Time in ms (seq): 4450.56
+Time in ms (parallel): 836.178

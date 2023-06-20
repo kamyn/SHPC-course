@@ -1,0 +1,4 @@
+Type	N	    Time ms	
+Seq	    1000000	4.21213	
+Atomic	1000000	29.5668	
+Reduct	1000000	0.533715
